@@ -16,7 +16,7 @@ struct Vertex {
 }
 
 fn main() -> io::Result<()> {
-    let file_path = Path::new("../temp/ascii_ply.ply");
+    let file_path = Path::new("../temp/cropped_z-95_-5.ply");
     let mut vertices: Vec<Vertex> = Vec::new();
     let mut found_endheader = false;
 
@@ -46,15 +46,24 @@ fn main() -> io::Result<()> {
         }
     }
 
-    // Define a threshold for "quite green"
-    let green_threshold = 200;
+    let red_th = 10;
+    let green_th = 10;
+    let blue_th = 10;
+    let black_th = 50;
+    let yellow_th = 10;
 
-    // Filtering vertices based on conditions including not being "quite green"
+    // Filtering vertices based on conditions
     let filtered_vertices: Vec<&Vertex> = vertices.iter()
-        .filter(|v| v.nz >= 0.9 && v.nx > -0.2 && v.nx < 0.2 && v.ny > -0.2 && v.ny < 0.2 && v.green < green_threshold)
+        .filter(|v| v.nz >= 0.9 && v.nx > -0.2 && v.nx < 0.2 && v.ny > -0.2 && v.ny < 0.2
+            && (((v.green as i32 + v.blue as i32 + v.red as i32) / 3) > 50)
+            && ((v.red as i32 - red_th) < ((v.green as i32 + v.blue as i32) / 2))
+            && ((v.green as i32 - green_th) < ((v.red as i32 + v.blue as i32) / 2))
+            && ((v.blue as i32 - blue_th) < ((v.red as i32 + v.green as i32) / 2))
+            && ((v.blue as i32 + yellow_th) > ((v.red as i32 + v.green as i32) / 2)))
         .collect();
 
-    let output_path = Path::new("../temp/filtered_ply.ply");
+        let output_file_name = format!("../temp/filtered_{}{}{}_black{}_yellow{}.ply", red_th, green_th, blue_th, black_th, yellow_th);
+        let output_path = Path::new(&output_file_name);
     let mut output_file = File::create(&output_path)?;
 
     // Re-read the original file for the header

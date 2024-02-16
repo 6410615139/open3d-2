@@ -20,6 +20,6 @@ def convert_to_ascii(input_path = "Dataset/kota_circuit2.ply", output_path = "te
     o3d.io.write_point_cloud(output_path, pcd, write_ascii=True)
 
 if args.v:
-    visualize()
+    visualize(args.input)
 else:
     convert_to_ascii(args.input, args.output)
